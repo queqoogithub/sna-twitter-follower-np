@@ -1,0 +1,75 @@
+# Narathip Phongnara 
+# 6319910113
+# Neo4j version 4.2.1
+--------------------- CQL Source Code ----------------------
+
+# Import Dataset
+LOAD CSV FROM "file:///twitter-follows-test2.csv" 
+AS line FIELDTERMINATOR ' '
+WITH toInteger(line[0]) 
+AS userId1, 
+toInteger(line[1]) 
+AS userId2 
+MERGE (u1:User{id:userId1})
+MERGE (u2:User{id:userId2})
+MERGE (u1)-[r:follower]->(u2)
+RETURN count(r)
+
+# Match relationship
+MATCH (u1:User)<-[r:follower]-(u2:User) 
+RETURN u1,r,u2 
+LIMIT 100
+
+# Degree centrality
+MATCH (u:User)
+RETURN u.id AS ID, size((u)-[]-()) 
+AS degree 
+ORDER BY degree DESC 
+LIMIT 10
+
+# Graph datasci for betweenness centrality
+CALL gds.betweenness.stream({
+    nodeProjection: '*',
+    relationshipProjection: {
+        similar: {
+            type: 'follower',
+            orientation: 'UNDIRECTED'
+        }
+    }
+}) 
+YIELD nodeId, score
+RETURN gds.util.asNode(nodeId).id AS ID, score
+ORDER BY score DESC 
+LIMIT 10
+
+# Graph datasci for closeness centrality
+CALL gds.alpha.closeness.stream({
+  nodeProjection: 'User',
+  relationshipProjection: 'follower'
+})
+YIELD nodeId, centrality
+RETURN gds.util.asNode(nodeId).id 
+AS user, centrality
+ORDER BY centrality DESC 
+LIMIT 1000
+
+# Shorttest path among user 214 and 789
+MATCH (u1:User {id:214}), (u2:User {id:789})
+MATCH P=shortestPath((u1)-[*]-(u2))
+RETURN P
+
+# Ranking follower size
+MATCH (u:User)
+RETURN u.id AS ID, size((u)-[]-()) 
+AS degree 
+ORDER BY degree DESC 
+LIMIT 10
+
+# Check user 1757 followers
+MATCH (u1:User {id: 1757})<-[r:follower]-(u2:User) 
+RETURN u1,r,u2 
+LIMIT 100
+
+# Detect graph for re-run
+MATCH (n)
+DETACH DELETE n
