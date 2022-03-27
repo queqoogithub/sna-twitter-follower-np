@@ -1,5 +1,4 @@
 # sna twitter follower
-### final project SNA by Narathip Phongnara 63199130113
 
 ## tool version
 neo4j version 4.2.1
