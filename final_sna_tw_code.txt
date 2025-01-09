@@ -1,5 +1,4 @@
 # Narathip Phongnara 
-# 6319910113
 # Neo4j version 4.2.1
 --------------------- CQL Source Code ----------------------
 
